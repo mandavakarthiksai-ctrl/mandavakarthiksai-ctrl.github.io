@@ -42,9 +42,7 @@ const nouns = ["Star","Journey","Dream","Flame","Destiny","Heart","Empire","Saga
 const suffixes = ["Returns","Forever","Rising","Awakens","Chronicles","Unleashed","Legacy","Rise"];
 const storyTemplates = ["A gripping tale of love and betrayal in modern India.","An action-packed journey of a hero against all odds.","A heartwarming story of family, friendship, and courage.","A suspenseful mystery that will keep audiences on edge.","An inspiring tale of ambition and dreams coming true.","A thrilling adventure across India’s hidden landscapes.","A dramatic story of rivalry, ambition, and redemption.","A romantic saga with unexpected twists and turns."];
 const promoQuestions = [
-{question:"How will you describe your co-star in interviews?",choices:[{text:"Praised them a lot",effect:+10},{text:"Neutral comments",effect:0},{text:"Criticized them jokingly",effect:-10}]},
-{question:"What’s your comment on the film genre?",choices:[{text:"Highly praise the film",effect:+10},{text:"Be neutral",effect:0},{text:"Make a controversial joke",effect:-15}]},
-{question:"How confident are you about the film’s success?",choices:[{text:"Very confident",effect:+10},{text:"Moderately confident",effect:0},{text:"Seem unsure",effect:-10}]}];
+
 
 function generateMovieTitle(){ let adj=adjectives[Math.floor(Math.random()*adjectives.length)]; let noun=nouns[Math.floor(Math.random()*nouns.length)]; let useSuffix=Math.random()<0.5; let title=adj+" "+noun; if(useSuffix){let suffix=suffixes[Math.floor(Math.random()*suffixes.length)]; title+=" "+suffix;} return title;}
 function generateStoryOverview(){ return storyTemplates[Math.floor(Math.random()*storyTemplates.length)];}
