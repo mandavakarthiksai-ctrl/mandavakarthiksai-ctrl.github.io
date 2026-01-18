@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rising Star: India</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f2f2f2; }
+  #container { display: flex; justify-content: space-around; margin: 20px; }
+  #stats, #projects { background: white; padding: 20px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); }
+  #stats h2, #projects h2 { text-align: center; }
+  .button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+  .project-btn { background-color: #4CAF50; color: white; }
+  .action-btn { background-color: #2196F3; color: white; }
+  #notifications { margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; box-shadow: 1px 1px 5px rgba(0,0,0,0.1); height: 150px; overflow-y: auto; }
+</style>
+</head>
+<body>
+<h1 style="text-align:center;">Rising Star: India</h1>
+<div id="container">
+  <div id="stats">
+    <h2>Actor Stats</h2>
+    <p id="statsText"></p>
+    <button class="action-btn" onclick="trainActing()">Train Acting (+Skill, -10 Money)</button>
+    <button class="action-btn" onclick="prCampaign()">PR Campaign (+Popularity, -15 Money)</button>
+  </div>
+  <div id="projects">
+    <h2>Project Offers</h2>
+    <div id="projectButtons"></div>
+  </div>
+</div>
+<div id="notifications"></div>
+<script>
+let player = {name: prompt('Enter your actor name:'), region: prompt('Choose starting region: Bollywood/Tollywood/Kollywood/Mollywood/Sandalwood'), popularity: 30, skill: 40, versatility: 20, starPower: 10, money: 50};
+let rivals = [{name:'Raj', region: player.region}, {name:'Anaya', region: player.region}];
+let notifications = document.getElementById('notifications');
+
+function updateStats(){
+  document.getElementById('statsText').innerHTML = `Name: ${player.name}<br>Region: ${player.region}<br>Popularity: ${player.popularity}<br>Skill: ${player.skill}<br>Versatility: ${player.versatility}<br>Star Power: ${player.starPower}<br>Money: ${player.money}`;
+}
+
+function addNotification(text){
+  notifications.innerHTML += `<p>${text}</p>`;
+  notifications.scrollTop = notifications.scrollHeight;
+}
+
+function generateProjects(){
+  let types = ['Big-budget blockbuster', 'Mid-budget drama', 'Indie/OTT project'];
+  let projects = [];
+  for(let i=0;i<Math.floor(Math.random()*3)+1;i++){
+    let type = types[Math.floor(Math.random()*types.length)];
+    let directorRep = Math.floor(Math.random()*60)+40;
+    let producerBudget = Math.floor(Math.random()*60)+40;
+    projects.push({title: `${type} ${Math.floor(Math.random()*100)}`, type, directorRep, producerBudget});
+  }
+  return projects;
+}
+
+function simulateProject(proj){
+  let rivalImpact = rivals.reduce((acc,r)=> acc + Math.floor(Math.random()*11)+5,0);
+  let baseSuccess = proj.type==='Big-budget blockbuster'?Math.floor(Math.random()*41)+60:proj.type==='Mid-budget drama'?Math.floor(Math.random()*31)+40:Math.floor(Math.random()*31)+30;
+  let score = baseSuccess + player.popularity*0.4 + player.skill*0.3 + player.versatility*0.2 + proj.directorRep*0.2 + proj.producerBudget*0.2 - rivalImpact + Math.floor(Math.random()*21)-10;
+  let result='';
+  if(score>80){ result='HIT! Public loves it!'; player.popularity+=10; player.skill+=5; player.starPower+=8; player.money+=20;}
+  else if(score>50){ result='AVERAGE. Mixed reviews.'; player.popularity+=5; player.skill+=3; player.starPower+=3; player.money+=10;}
+  else{ result='FLOP! Audience not impressed.'; player.popularity-=5; player.starPower-=3; player.money-=5;}
+  addNotification(`Project: ${proj.title} - ${result}`);
+  updateStats();
+  newMonth();
+}
+
+function newMonth(){
+  let projectDiv = document.getElementById('projectButtons');
+  projectDiv.innerHTML='';
+  let projects = generateProjects();
+  projects.forEach((p,i)=>{
+    let btn = document.createElement('button');
+    btn.innerText = `Accept ${p.title} (${p.type})`;
+    btn.className='button project-btn';
+    btn.onclick=()=>simulateProject(p);
+    projectDiv.appendChild(btn);
+  });
+}
+
+function trainActing(){
+  if(player.money>=10){player.skill+=5;player.money-=10; addNotification('Trained acting: +5 Skill, -10 Money');}
+  else{addNotification('Not enough money to train');}
+  updateStats();
+}
+
+function prCampaign(){
+  if(player.money>=15){player.popularity+=8;player.money-=15; addNotification('PR campaign successful: +8 Popularity, -15 Money');}
+  else{addNotification('Not enough money for PR');}
+  updateStats();
+}
+
+updateStats();
+newMonth();
+</script>
+</body>
+</html>
