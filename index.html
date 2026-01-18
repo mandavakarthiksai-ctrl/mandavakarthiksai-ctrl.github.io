@@ -48,7 +48,25 @@ const promoQuestions = [
 
 function generateMovieTitle(){ let adj=adjectives[Math.floor(Math.random()*adjectives.length)]; let noun=nouns[Math.floor(Math.random()*nouns.length)]; let useSuffix=Math.random()<0.5; let title=adj+" "+noun; if(useSuffix){let suffix=suffixes[Math.floor(Math.random()*suffixes.length)]; title+=" "+suffix;} return title;}
 function generateStoryOverview(){ return storyTemplates[Math.floor(Math.random()*storyTemplates.length)];}
-function generateProjects(){ let projects=[]; for(let i=0;i<Math.floor(Math.random()*3)+1;i++){ let title=generateMovieTitle(); let projTypeRoll=Math.random(); let projType=projTypeRoll<0.3?'Big-budget blockbuster':projTypeRoll<0.7?'Mid-budget drama':'Indie/OTT project'; let directorRep=Math.floor(Math.random()*60)+40; let producerBudget=Math.floor(Math.random()*50000000)+50000000; let storyOverview=generateStoryOverview(); projects.push({title,type:projType,directorRep,producerBudget,storyOverview,hype:50}); } return projects;}
+
+function generateProjects(){
+    let projects = [];
+    let hits = actorMovies.filter(m=>["HIT","SUPERHIT","BLOCKBUSTER"].includes(m.outcome)).length;
+    let flops = actorMovies.filter(m=>m.outcome=="FLOP").length;
+    let baseBudget = 50000000 + hits*10000000 - flops*5000000;
+    if(baseBudget<30000000) baseBudget=30000000;
+    for(let i=0;i<Math.floor(Math.random()*3)+1;i++){
+        let title = generateMovieTitle();
+        let projTypeRoll=Math.random();
+        let projType = projTypeRoll<0.3?'Big-budget blockbuster':projTypeRoll<0.7?'Mid-budget drama':'Indie/OTT project';
+        let directorRep = Math.floor(Math.random()*60)+40;
+        let producerBudget = baseBudget + Math.floor(Math.random()*20000000);
+        let storyOverview = generateStoryOverview();
+        projects.push({title,type:projType,directorRep,producerBudget,storyOverview,hype:50});
+    }
+    return projects;
+}
+
 function formatMoney(amount){ if(amount>=10000000){return(amount/10000000).toFixed(2)+" Cr";} else if(amount>=100000){return(amount/100000).toFixed(2)+" Lakh";} else{return"₹"+amount.toLocaleString('en-IN');}}
 function formatBudget(amount){ return(amount/10000000).toFixed(2)+" Cr";}
 let notifications=document.getElementById('notifications');
@@ -62,16 +80,20 @@ function showPromotionQuestion(movie){ let q=promoQuestions[Math.floor(Math.rand
 function simulateDailyCollections(actor,movie){ let hitChance=calculateHitChance(actor,movie); let isHit=Math.random()<hitChance; let days=7+Math.floor(Math.random()*3); let dailyRevenue=[]; let totalRevenue=0; for(let day=1; day<=days; day++){ let base; if(day===1){ base=isHit?Math.random()*5000000+5000000:Math.random()*2000000+1000000; let day1Multiplier=1+(movie.hype/100)*0.5; base=Math.floor(base*day1Multiplier);} else{ base=isHit?Math.random()*5000000+5000000:Math.random()*2000000+1000000;} let fluctuation=1+(Math.random()*0.2-0.1); let budgetMultiplier=0.8+(movie.producerBudget/10000000)*0.05; let popularityMultiplier=1+(actor.popularity/1000); let daily=Math.floor(base*fluctuation*budgetMultiplier*popularityMultiplier); dailyRevenue.push(daily); totalRevenue+=daily;}
 let recovery=totalRevenue/movie.producerBudget; let category;if(recovery<0.79)category="FLOP"; else if(recovery<1)category="AVERAGE"; else if(recovery<1.5)category="HIT"; else if(recovery<2)category="SUPERHIT"; else category="BLOCKBUSTER"; if(["HIT","SUPERHIT","BLOCKBUSTER"].includes(category)){ let increase=5+Math.floor(Math.random()*6); actor.popularity+=increase; addNotification(`${movie.title} was a ${category}! Popularity +${increase}`);} else if(category=="FLOP"){ let decrease=5+Math.floor(Math.random()*5); actor.popularity-=decrease; if(actor.popularity<0) actor.popularity=0; addNotification(`${movie.title} was a FLOP! Popularity -${decrease}`);} else addNotification(`${movie.title} performed AVERAGE. Popularity unchanged.`); let actorShare=Math.floor(totalRevenue*0.3); actor.money+=actorShare; actorMovies.push({title:movie.title,story:movie.storyOverview,directorRep:movie.directorRep,producerBudget:movie.producerBudget,totalRevenue:totalRevenue,actorShare:actorShare,outcome:category,startMonth:movie.startMonth}); let message=`Movie: ${movie.title} Daily Collections:\n${movie.storyOverview}\n`; dailyRevenue.forEach((rev,idx)=>{ message+=`Day ${idx+1}: ${formatMoney(rev)}\n`; }); message+=`Total Box Office: ${formatMoney(totalRevenue)}\nActor Earnings (30%): ${formatMoney(actorShare)}\nOutcome: ${category}`; addNotification(message); updateStats();}
 
-function acceptProject(proj){ if(player.inProduction.length>=2){ addNotification("You are already filming 2 movies."); return;} let duration=3+Math.floor(Math.random()*4); proj.startMonth=currentMonth; proj.endMonth=currentMonth+duration; player.inProduction.push(proj); addNotification(`Started filming ${proj.title}. Duration: ${duration} months.`); updateStats();}
+function acceptProject(proj){ if(player.inProduction.length>=2){ addNotification("You are already filming 2 movies."); return;} let duration=3+Math.floor(Math.random()*4); proj.startMonth=currentMonth; proj.endMonth=currentMonth+duration; player.inProduction.push(proj); addNotification(`Started filming ${proj.title}. Duration: ${duration} months.`); // Remove clicked button if exists
+if(event && event.target) event.target.remove(); // Add new replacement project
+let newProj = generateProjects()[0]; let btn=document.createElement('button'); btn.className='button project-btn'; btn.innerText=`${newProj.title}\nDirector Rep: ${newProj.directorRep}, Producer Budget: ${formatBudget(newProj.producerBudget)}\nStory: ${newProj.storyOverview}`; btn.onclick=()=>acceptProject(newProj); document.getElementById('projectButtons').appendChild(btn); updateStats();}
 function trainActing(){ if(player.money>=10000){player.skill+=5;player.money-=10000; addNotification('Trained acting: +5 Skill, -10k');} else addNotification('Not enough money to train'); updateStats();}
 function prCampaign(){ if(player.money>=15000){player.popularity+=8;player.money-=15000; addNotification('PR campaign: +8 Popularity, -15k');} else addNotification('Not enough money for PR'); updateStats();}
 function viewCareer(){ if(actorMovies.length===0){ addNotification("You haven't done any movies yet!"); return;} let biggestHit=actorMovies.filter(m=>["HIT","SUPERHIT","BLOCKBUSTER"].includes(m.outcome)).sort((a,b)=>b.totalRevenue-a.totalRevenue)[0]; let biggestFlop=actorMovies.filter(m=>m.outcome=="FLOP").sort((a,b)=>a.totalRevenue-b.totalRevenue)[0]; let highestGrosser=actorMovies.sort((a,b)=>b.totalRevenue-a.totalRevenue)[0]; actorMovies.sort((a,b)=>a.startMonth-b.startMonth); let message=`Career Overview:\nTotal Movies: ${actorMovies.length}\n`; if(biggestHit)message+=`Biggest Hit: ${biggestHit.title} (${formatMoney(biggestHit.totalRevenue)})\n`; if(biggestFlop)message+=`Biggest Flop: ${biggestFlop.title} (${formatMoney(biggestFlop.totalRevenue)})\n`; message+=`Highest Grosser: ${highestGrosser.title} (${formatMoney(highestGrosser.totalRevenue)})\n\nMovies in Chronological Order:\n`; actorMovies.forEach((m,idx)=>{ message+=`${idx+1}. ${m.title} | Budget: ${formatBudget(m.producerBudget)} | Collection: ${formatMoney(m.totalRevenue)} | Actor Earnings: ${formatMoney(m.actorShare)} | Outcome: ${m.outcome}\n`; }); addNotification(message);}
 
 function newMonth(){ let projectDiv=document.getElementById('projectButtons'); projectDiv.innerHTML=''; let projects=generateProjects(); projects.forEach((p,i)=>{ let btn=document.createElement('button'); btn.className='button project-btn'; btn.innerText=`${p.title}\nDirector Rep: ${p.directorRep}, Producer Budget: ${formatBudget(p.producerBudget)}\nStory: ${p.storyOverview}`; btn.onclick=()=>acceptProject(p); projectDiv.appendChild(btn); });}
 
-function advanceMonth(){ currentMonth++; player.inProduction.forEach((movie,i)=>{ if(currentMonth>=movie.endMonth){ player.inProduction.splice(i,1); showPromotionQuestion(movie); }});
+function advanceMonth(){ currentMonth++;
+    player.inProduction.forEach((movie,i)=>{ if(currentMonth>=movie.endMonth){ player.inProduction.splice(i,1); showPromotionQuestion(movie); }});
     rivalActors.forEach(r=>{ r.inProduction.forEach((movie,i)=>{ if(currentMonth>=movie.endMonth){ r.inProduction.splice(i,1); movie.hype=40+Math.floor(Math.random()*21); movie.releaseMonth=currentMonth; simulateDailyCollections(r,movie); r.movies.push(movie); }}); });
-    updateStats();}
+    updateStats();
+}
 setInterval(advanceMonth,10000);
 updateStats();
 newMonth();
