@@ -97,6 +97,48 @@ function advanceMonth(){ currentMonth++;
 setInterval(advanceMonth,10000);
 updateStats();
 newMonth();
+  function advanceMonth(){
+    currentMonth++;
+
+    // Check player movies
+    for(let i = player.inProduction.length - 1; i >= 0; i--){
+        let movie = player.inProduction[i];
+        if(currentMonth >= movie.endMonth){
+            player.inProduction.splice(i,1);
+            showPromotionQuestion(movie);
+
+            // Generate a new project offer automatically
+            addNewProjectOffer();
+        }
+    }
+
+    // Rivals progress
+    rivalActors.forEach(r => {
+        for(let i = r.inProduction.length - 1; i >= 0; i--){
+            let movie = r.inProduction[i];
+            if(currentMonth >= movie.endMonth){
+                r.inProduction.splice(i,1);
+                movie.hype = 40 + Math.floor(Math.random()*21);
+                movie.releaseMonth = currentMonth;
+                simulateDailyCollections(r, movie);
+                r.movies.push(movie);
+            }
+        }
+    });
+
+    updateStats();
+}
+function addNewProjectOffer(){
+    let projectDiv = document.getElementById('projectButtons');
+    let newProj = generateProjects()[0]; // Generate a single project
+    let btn = document.createElement('button');
+    btn.className = 'button project-btn';
+    btn.innerText = `${newProj.title}\nDirector Rep: ${newProj.directorRep}, Producer Budget: ${formatBudget(newProj.producerBudget)}\nStory: ${newProj.storyOverview}`;
+    btn.onclick = () => acceptProject(newProj);
+    projectDiv.appendChild(btn);
+    addNotification(`New project offer: ${newProj.title}`);
+}
+
 </script>
 </body>
 </html>
