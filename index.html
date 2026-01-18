@@ -1,172 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rising Star: India</title>
+<title>Indian Actor Career Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body { font-family: Arial; background:#f2f2f2; margin:0; }
-#homeScreen{
- position:fixed; inset:0;
- background:linear-gradient(#ffecd2,#fcb69f);
- display:flex; flex-direction:column;
- justify-content:center; align-items:center;
- z-index:1000;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color: #fff;
 }
-#homeScreen h1{font-size:3em}
-#container{display:flex; margin:20px}
-#stats,#projects{
- background:white; padding:20px; margin:10px;
- border-radius:10px; flex:1;
- box-shadow:0 0 10px rgba(0,0,0,.2)
+header {
+  padding: 15px;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-button{padding:8px;margin:4px;border:none;border-radius:5px;cursor:pointer}
-.project{background:#4CAF50;color:white}
-.reject{background:#f44336;color:white}
-.action{background:#2196F3;color:white}
-#notifications{
- background:white; margin:20px; padding:10px;
- height:250px; overflow-y:auto;
- border-radius:8px
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #ff9800;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover { opacity: 0.85; }
+
+.container {
+  padding: 15px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.flex {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.movie {
+  flex: 1;
+  min-width: 250px;
+  background: rgba(0,0,0,0.35);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+small { opacity: 0.8; }
+
+.progress {
+  height: 8px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress div {
+  height: 100%;
+  background: #4caf50;
+}
+
+@media(max-width:600px){
+  header { flex-direction: column; gap: 10px; }
 }
 </style>
 </head>
-<body>
 
-<div id="homeScreen">
-<h1>Rising Star: India</h1>
-<p>Become India’s biggest movie star</p>
-<button onclick="startGame()">Start Career</button>
-</div>
+<body
 
-<div id="container">
-<div id="stats"></div>
-<div id="projects"><h2>Movie Offers</h2><div id="offers"></div></div>
-</div>
-
-<div id="notifications"></div>
-
-<script>
-let day=1;
-let player={
- name:prompt("Actor Name"),
- region:prompt("Region"),
- popularity:30, skill:40, money:40000,
- inProd:[], movies:[]
-};
-
-function log(t){let n=document.getElementById("notifications");n.innerHTML+=t+"<br>";n.scrollTop=n.scrollHeight;}
-
-function fmt(n){
- if(n>=1e7) return (n/1e7).toFixed(2)+" Cr";
- if(n>=1e5) return (n/1e5).toFixed(2)+" Lakh";
- return "₹"+n.toLocaleString("en-IN");
-}
-
-function stats(){
- document.getElementById("stats").innerHTML=
- `<h2>${player.name}</h2>
- Day: ${day}<br>
- Popularity: ${player.popularity}<br>
- Money: ${fmt(player.money)}<br>
- In Production: ${player.inProd.map(m=>m.title).join(", ")||"None"}<br>
- <button class="action" onclick="skip(1)">+1 Day</button>
- <button class="action" onclick="skip(10)">+10 Days</button>
- <button class="action" onclick="career()">Career</button>`;
-}
-
-function newOffer(){
- if(document.getElementById("offers").children.length>=4) return;
- let talk=Math.floor(Math.random()*101);
- let film=90+Math.floor(Math.random()*31);
- let budget=30000000+player.popularity*200000;
- let m={
-  title:["Silent","Golden","Hidden","Last","Rising"][Math.floor(Math.random()*5)]+" Saga",
-  budget, film, promo:20,
-  start:day, talk, hype:50
- };
- let d=document.createElement("div");
- d.innerHTML=
- `<b>${m.title}</b><br>
- Budget: ${fmt(budget)}<br>
- Story: A dramatic journey<br>`;
- let a=document.createElement("button");
- a.innerText="Accept"; a.className="project";
- a.onclick=()=>accept(m,d);
- let r=document.createElement("button");
- r.innerText="Reject"; r.className="reject";
- r.onclick=()=>{log("Rejected "+m.title);d.remove();newOffer();}
- d.append(a,r);
- document.getElementById("offers").appendChild(d);
-}
-
-function accept(m,div){
- if(player.inProd.length>=2){log("Already filming 2 movies");return;}
- m.endFilm=day+m.film;
- m.endPromo=m.endFilm+m.promo;
- player.inProd.push(m);
- div.remove();
- newOffer();
- log("Started filming "+m.title);
-}
-
-function release(m){
- let talk=m.talk;
- let outcome=
- talk==0?"DISASTER":
- talk<=25?"FLOP":
- talk<=50?"AVERAGE":
- talk<=75?"HIT":
- talk<100?"SUPERHIT":"BLOCKBUSTER";
-
- let base={DISASTER:1, FLOP:3, AVERAGE:8, HIT:15, SUPERHIT:25, BLOCKBUSTER:50}[outcome]*1e6;
- let total=0;
- for(let i=0;i<7;i++)
-  total+=base*(1+player.popularity/1000)*(0.9+Math.random()*0.2);
-
- let earn=total*0.3;
- player.money+=earn;
-
- if(outcome=="HIT"||outcome=="SUPERHIT"||outcome=="BLOCKBUSTER")
-  player.popularity+=5;
- if(outcome=="FLOP"||outcome=="DISASTER")
-  player.popularity=Math.max(0,player.popularity-5);
-
- player.movies.push({title:m.title,outcome,total,budget:m.budget});
- log(`<b>${m.title} Released</b><br>
- Public Talk: ${talk}%<br>
- Result: ${outcome}<br>
- Gross: ${fmt(total)}<br>
- Actor Earned: ${fmt(earn)}<br>`);
-}
-
-function skip(d){
- for(let i=0;i<d;i++){
-  day++;
-  player.inProd.forEach((m,idx)=>{
-   if(day>=m.endPromo){
-    release(m);
-    player.inProd.splice(idx,1);
-    newOffer();
-   }
-  });
- }
- stats();
-}
-
-function career(){
- let txt="Career:<br>";
- player.movies.forEach((m,i)=>{
-  txt+=`${i+1}. ${m.title} | ${m.outcome} | ${fmt(m.total)}<br>`;
- });
- log(txt||"No movies yet");
-}
-
-function startGame(){
- document.getElementById("homeScreen").style.display="none";
- stats();
- for(let i=0;i<4;i++) newOffer();
-}
-</script>
-</body>
-</html>
 
