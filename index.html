@@ -1,120 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Actor Simulator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  background:#111;
-  color:white;
-  font-family:Arial, sans-serif;
-  padding:20px;
-}
-button {
-  padding:8px 12px;
-  margin:5px;
-  cursor:pointer;
-}
-.box {
-  border:1px solid #444;
-  padding:10px;
-  margin:10px 0;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>HTML Test</title>
 </head>
+<body style="background:black;color:white;font-family:Arial">
 
-<body>
+<h1>✅ HTML IS LOADING</h1>
 
-<h1>🎭 Actor Career Simulator</h1>
-<p>If you see this, the game is working.</p>
+<p>
+If you can read this text, your browser is working and the file is opening correctly.
+</p>
 
-<div class="box">
-  💰 Money: <span id="money">₹40,000</span><br>
-  ⭐ Popularity: <span id="pop">20</span><br>
-  📅 Day: <span id="day">1</span>
-</div>
+<p>
+If this page is white or blank, then:
+</p>
 
-<div class="box">
-  <h3>🎥 Movie Offers</h3>
-  <div id="offers"></div>
-</div>
-
-<div class="box">
-  <h3>🎬 Ongoing Movies</h3>
-  <div id="ongoing">None</div>
-</div>
-
-<button onclick="nextDay()">+1 Day</button>
-
-<script>
-// ---- GAME STATE (NO DOM DEPENDENCY) ----
-let day = 1;
-let money = 40000;
-let popularity = 20;
-
-let offers = [
-  { title:"Film A", days:120, talk:30, budget:30000000 },
-  { title:"Film B", days:100, talk:70, budget:50000000 }
-];
-
-let ongoing = [];
-
-// ---- RENDER (SAFE) ----
-function render() {
-  document.getElementById("money").innerText = "₹" + money.toLocaleString();
-  document.getElementById("pop").innerText = popularity;
-  document.getElementById("day").innerText = day;
-
-  let offersHTML = "";
-  for (let i = 0; i < offers.length; i++) {
-    offersHTML += `
-      <div>
-        ${offers[i].title} |
-        Budget ₹${offers[i].budget.toLocaleString()}
-        <button onclick="acceptMovie(${i})">Accept</button>
-      </div>
-    `;
-  }
-  document.getElementById("offers").innerHTML = offersHTML || "No offers";
-
-  let ongoingHTML = "";
-  for (let m of ongoing) {
-    ongoingHTML += `<div>${m.title} – ${m.days} days left</div>`;
-  }
-  document.getElementById("ongoing").innerHTML = ongoingHTML || "None";
-}
-
-// ---- ACTIONS ----
-function acceptMovie(i) {
-  if (ongoing.length >= 2) {
-    alert("You can only do 2 movies at a time");
-    return;
-  }
-  ongoing.push(offers[i]);
-  offers.splice(i,1);
-  render();
-}
-
-function nextDay() {
-  day++;
-  for (let m of ongoing) {
-    m.days--;
-    if (m.days === 0) {
-      let gross = m.budget * (m.talk / 50);
-      money += Math.floor(gross * 0.3);
-      popularity += m.talk >= 50 ? 5 : -5;
-      alert(m.title + " released!");
-    }
-  }
-  ongoing = ongoing.filter(m => m.days > 0);
-  render();
-}
-
-// ---- START ----
-render();
-</script>
+<ul>
+  <li>The file is NOT actually opening</li>
+  <li>OR the file extension is wrong</li>
+  <li>OR you are opening a different file than you think</li>
+</ul>
 
 </body>
 </html>
